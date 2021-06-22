@@ -38,10 +38,8 @@ def build_fib(n):
         
     fib_nums = [0, 1]
     
-    print(fib_nums)
     for i in range(2,n+1):
         fib_nums.append(fib_nums[i-1] + fib_nums[i-2])
-        print(fib_nums)
          
     return fib_nums[n]
     
@@ -88,7 +86,7 @@ def main():
     
     #output 2
     # print("build fib")
-    # print(build_fib(n))
+    #print(build_fib(n))
     # print(build_fib(n-1))
     # print(build_fib(n-2))
     
@@ -103,7 +101,7 @@ def main():
     # print(mem_fib(n+1))
     
     #output 4
-    print("improved mem fib")
+    # print("improved mem fib")
     print(mem_improved(n))
     # print("n-1")
     # print(mem_improved(n-1))

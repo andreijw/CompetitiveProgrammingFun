@@ -24,7 +24,8 @@ def read_image(image_path):
     
 def gray_scale_image(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray_image = cv2.GaussianBlur(gray_image, (13,13), 0)
+    gray_image = cv2.GaussianBlur(gray_image, (3,3), 0)
+    #gray_image = cv2.GaussianBlur(gray_image, (7,7), 0)
     return gray_image
     
 def invert_image(image):
@@ -32,18 +33,19 @@ def invert_image(image):
     return i_image
 
 def threshold_image(image):
-    # a global threshold is not good for an image like this
-    t_image = cv2.adaptiveThreshold(image, 250, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,9,2)
+    #t_image = cv2.adaptiveThreshold(image, 250, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    (t, t_image) = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)
     return t_image
     
 def open_image(image):
-    kernel = np.ones((1,1), np.uint8)
+    kernel = np.ones((2,2), np.uint8)
     o_image = cv2.dilate(image, kernel, iterations=1)
     return o_image
-    
-def canny_image(image):
-    c_image = cv2.Canny(image, 100, 250)
-    return c_image
+
+def morph_opening(image):
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
+    o_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=2)
+    return o_image
     
 def process_image(image):
     # https://tesseract-ocr.github.io/tessdoc/ImproveQuality#page-segmentation-method
@@ -51,20 +53,17 @@ def process_image(image):
     contents = pytesseract.image_to_string(image)
     return contents
     
-def get_bounding_box(image):
-    img = image
-    h, w, c = img.shape
-    boxes = pytesseract.image_to_boxes(img)
-    
-    for pixel in boxes.splitlines():
-        split_pixel = pixel.split(' ')
-        img = cv2.rectangle(image, (int(split_pixel[1]), h - int(split_pixel[2])), (int(split_pixel[3]), h - int(split_pixel[4])), (0, 255, 0), 2)
-    
-    return img
-    
-def apply_mask(image):
-    m_image = image
+def apply_mask(original_image, binary_image):
+    m_image = cv2.bitwise_and(original_image, original_image, mask=binary_image)
     return m_image
+    
+def find_contours(image):
+    new_image = image
+    contours, hierarchy = cv2.findContours(new_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  
+    print("found the following number of contours", len(contours))
+    
+    contoured_image = cv2.drawContours(new_image, contours, -1, (0, 255, 0), 3)
+    return contoured_image
     
 def main():
     # User will input the image path
@@ -80,19 +79,19 @@ def main():
 
     # preprocess the image
     gray_image = gray_scale_image(image)
-    i_image = invert_image(gray_image)
-    t_image = threshold_image(i_image)
-    o_image = open_image(t_image)
-    c_image = canny_image(o_image)
+    t_image = threshold_image(gray_image)  
+    # o_image = open_image(t_image)
+    o_image = morph_opening(t_image)
+    c_image = find_contours(o_image)
+    # m_image = apply_mask(image, o_image)
     
     # display the images
     cv2.imshow('Original Image', image)
     cv2.imshow('Gray Image', gray_image)
-    cv2.imshow('Inverted Image', i_image)
     cv2.imshow('Binary Image', t_image)
     cv2.imshow('Opened Image', o_image)
-    cv2.imshow('Canny Image', c_image)
-    c_image = t_image
+    cv2.imshow('Contoured Image', c_image)
+    # cv2.imshow('Canny Image', m_image)    
     
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -100,12 +99,6 @@ def main():
     #transform the image into text    
     imageContents = process_image(c_image)
     print(imageContents)
-    
-    # get boxes
-    # boxed_image = get_bounding_box(c_image)
-    # cv2.imshow('boxes', boxed_image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
     
 if __name__ == "__main__":
     main()

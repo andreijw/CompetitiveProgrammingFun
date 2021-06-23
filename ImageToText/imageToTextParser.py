@@ -27,33 +27,26 @@ def gray_scale_image(image):
     gray_image = cv2.GaussianBlur(gray_image, (3,3), 0)
     #gray_image = cv2.GaussianBlur(gray_image, (7,7), 0)
     return gray_image
-    
-def invert_image(image):
-    i_image = cv2.bitwise_not(image)
-    return i_image
 
 def threshold_image(image):
-    #t_image = cv2.adaptiveThreshold(image, 250, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-    (t, t_image) = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)
+    #t_image = cv2.adaptiveThreshold(image, 250, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 7, 2)
+    (t, t_image) = cv2.threshold(image, 5, 255, cv2.THRESH_BINARY_INV)
+    # (t, t_image) = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     return t_image
-    
-def open_image(image):
-    kernel = np.ones((2,2), np.uint8)
-    o_image = cv2.dilate(image, kernel, iterations=1)
-    return o_image
 
 def morph_opening(image):
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
-    o_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=2)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    o_image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=1)
     return o_image
     
 def process_image(image):
     # https://tesseract-ocr.github.io/tessdoc/ImproveQuality#page-segmentation-method
-    configuration = "r'--oem 3 --psm 6'"
-    contents = pytesseract.image_to_string(image)
+    configuration = "--psm 6"
+    contents = pytesseract.image_to_string(image, lang='eng', config=configuration)
     return contents
     
 def apply_mask(original_image, binary_image):
+    #inverted_image = cv2.bitwise_not(binary_image)
     m_image = cv2.bitwise_and(original_image, original_image, mask=binary_image)
     return m_image
     
@@ -80,25 +73,23 @@ def main():
     # preprocess the image
     gray_image = gray_scale_image(image)
     t_image = threshold_image(gray_image)  
-    # o_image = open_image(t_image)
-    o_image = morph_opening(t_image)
-    c_image = find_contours(o_image)
-    # m_image = apply_mask(image, o_image)
+    c_image = find_contours(t_image)
+    o_image = morph_opening(c_image)
+    #m_image = apply_mask(gray_image, c_image)
     
     # display the images
     cv2.imshow('Original Image', image)
     cv2.imshow('Gray Image', gray_image)
     cv2.imshow('Binary Image', t_image)
-    cv2.imshow('Opened Image', o_image)
     cv2.imshow('Contoured Image', c_image)
-    # cv2.imshow('Canny Image', m_image)    
+    cv2.imshow('Opened Image', o_image)
     
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-    #transform the image into text    
-    imageContents = process_image(c_image)
-    print(imageContents)
+    #transform the image into text  
+    imageContents = (process_image(o_image)[:-1]).strip()
+    print("Output Text - ", imageContents)
     
 if __name__ == "__main__":
     main()

@@ -3,10 +3,10 @@
 using namespace std;
 
 int main(){
-  int cases;
-  cin >> cases;
+  int tc;
+  cin >> tc;
 
-  while (cases--){
-    cout << "\n";
+  while (tc--){
+    cout << tc << "\n";
   }
 }

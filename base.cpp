@@ -1,16 +1,20 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 
 int main()
 {
-  int tc;
-  cin >> tc;
+  int testCases;
+  cin >> int(testCases);
 
-  while (tc--)
+  // go over the test cases
+  while (testCases--)
   {
-    cout << tc << "\n";
+    cout << testCases << "\n";
   }
+  return 0;
 }

@@ -2,11 +2,13 @@
 
 using namespace std;
 
-int main(){
+int main()
+{
   int tc;
   cin >> tc;
 
-  while (tc--){
+  while (tc--)
+  {
     cout << tc << "\n";
   }
 }

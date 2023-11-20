@@ -1,7 +1,0 @@
-Full problem here - https://codeforces.com/problemset/problem/1537/B
-
-My solution - Time 109 Ms, Memory 3700 Kb.
-
-Greedy Algorithm, Manhattan Distance, Grid
-
-1000 Points Problem
